@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stoneflower — Stoneflower Capital — Sample Portfolio Demo Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7F7F7; --surface:#FFFFFF; --border:#E0E0E0;
+  --text:#1C1C1C; --muted:#6B7280; --accent:#1E3B3D;
+  --accent-light:#EDF2F0; --gold:#C8A84A; --coral:#E84060;
+  --good:#1E7A3A; --bad:#C0392B;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Lato',sans-serif;font-size:14px;line-height:1.6;}
+.header{
+  background:#FFFFFF;border-bottom:2px solid var(--accent);
+  padding:28px 36px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+}
+.header h1{
+  font-family:'EB Garamond',Georgia,serif;font-size:28px;font-weight:700;color:var(--accent);letter-spacing:0.5px;
+}
+.subtitle{color:var(--muted);font-size:13px;margin-top:4px;}
+.container{max-width:1280px;margin:0 auto;padding:32px 28px;}
+.section{margin-bottom:48px;}
+.section-title{
+  font-family:'EB Garamond',Georgia,serif;font-size:18px;font-weight:600;color:var(--accent);
+  margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--border);
+}
+.summary-bar{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:1px;
+  background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:48px;
+}
+.summary-cell{background:var(--surface);padding:22px 16px;text-align:center;}
+.summary-cell .val{
+  font-size:26px;font-weight:700;font-family:'EB Garamond',Georgia,serif;color:var(--accent);
+}
+.summary-cell .lbl{
+  font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:6px;font-weight:500;
+}
+.good{color:var(--good)!important;} .bad{color:var(--bad)!important;}
+.cards-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.prop-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:box-shadow 0.2s;
+}
+.prop-card:hover{box-shadow:0 4px 16px rgba(30,59,61,.08);}
+.prop-header{padding:14px 16px;background:var(--accent-light);}
+.prop-name{font-family:'EB Garamond',Georgia,serif;font-weight:600;font-size:14px;color:var(--accent);}
+.prop-sub{font-size:10px;color:var(--muted);margin-top:3px;}
+.prop-metrics{padding:12px 16px;}
+.metric-row{
+  display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--accent-light);
+}
+.metric-row:last-child{border-bottom:none;}
+.metric-label{color:var(--muted);font-size:12px;}
+.metric-val{font-weight:600;font-size:13px;color:var(--text);}
+.bench-wrap{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;overflow-x:auto;
+}
+.bench-table{width:100%;border-collapse:collapse;font-size:13px;min-width:540px;}
+.bench-table th{
+  background:var(--accent);color:#FFFFFF;padding:12px 16px;text-align:left;font-weight:500;
+  font-size:11px;text-transform:uppercase;letter-spacing:.8px;border-bottom:2px solid var(--accent);white-space:nowrap;
+}
+.bench-table td{padding:10px 16px;border-bottom:1px solid var(--accent-light);}
+.bench-table tr:last-child td{border-bottom:none;}
+.bench-table tr:hover td{background:var(--accent-light);}
+.bench-table td.target{color:var(--muted);font-size:12px;font-style:italic;}
+.bench-table td.good{color:var(--good);font-weight:600;}
+.bench-table td.bad{color:var(--bad);font-weight:600;}
+.chart-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:22px 24px;
+}
+.chart-full{
+  background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:22px 24px;margin-top:20px;
+}
+.chart-title{
+  font-family:'EB Garamond',Georgia,serif;font-size:13px;font-weight:600;color:var(--accent);
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px;
+}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.traffic-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+  background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:24px;
+}
+.traffic-stat{background:var(--surface);padding:18px 16px;text-align:center;}
+.traffic-stat .val{font-size:22px;font-weight:700;font-family:'EB Garamond',Georgia,serif;color:var(--accent);}
+.traffic-stat .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:5px;font-weight:500;}
+.footer{
+  text-align:center;color:var(--muted);font-size:11px;padding:32px 0 48px;border-top:2px solid var(--accent);letter-spacing:0.3px;
+}
+.copyright{margin-top:6px;font-size:10px;color:var(--muted);letter-spacing:0.5px;}
+@media(max-width:900px){
+  .summary-bar{grid-template-columns:repeat(3,1fr);} .cards-grid{grid-template-columns:repeat(2,1fr);}
+  .charts-grid{grid-template-columns:1fr;} .traffic-stats{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:540px){
+  .summary-bar{grid-template-columns:repeat(2,1fr);} .cards-grid{grid-template-columns:1fr;}
+  .header h1{font-size:22px;} .traffic-stats{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div style="background:#FFF3CD;border-bottom:1px solid #FFF1A1;padding:10px 36px;text-align:center;font-size:11px;color:#665D31;font-weight:500;letter-spacing:0.5px;">
+  SAMPLE DATA — FOR DEMONSTRATION PURPOSES ONLY
+</div>
+<div class="header">
+  <div>
+    <h1>Stoneflower Asset Management Dashboard</h1>
+    <div class="subtitle">Stoneflower Capital — Sample Portfolio Demo • 4 Properties • 400 Units</div>
+  </div>
+</div>
+<div class="container">
+  <div class="summary-bar">
+    <div class="summary-cell"><div class="val good">92.2%</div><div class="lbl">Portfolio Occupancy</div></div>
+    <div class="summary-cell"><div class="val good">8.2%</div><div class="lbl">Exposure</div></div>
+    <div class="summary-cell"><div class="val bad">2.02%</div><div class="lbl">Delinquency</div></div>
+    <div class="summary-cell"><div class="val good">3.0%</div><div class="lbl">Loss to Lease</div></div>
+    <div class="summary-cell"><div class="val">$1,086</div><div class="lbl">Avg Rent / Unit</div></div>
+    <div class="summary-cell"><div class="val">27</div><div class="lbl">Active Leads</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Property Snapshot</div>
+    <div class="cards-grid">
+      
+        <div class="prop-card">
+          <div class="prop-header" style="border-left:4px solid #1E3B3D">
+            <div class="prop-name">Magnolia Gardens</div>
+            <div class="prop-sub">88/96 units • 8 vacant • as of 2026-04-24</div>
+          </div>
+          <div class="prop-metrics">
+            <div class="metric-row"><span class="metric-label">Active Leads</span><span class="metric-val">10</span></div>
+            <div class="metric-row"><span class="metric-label">Phys. Occupancy</span><span class="metric-val good">92.1%</span></div>
+            <div class="metric-row"><span class="metric-label">Exposure</span><span class="metric-val good">8.3%</span></div>
+            <div class="metric-row"><span class="metric-label">Delinquency</span><span class="metric-val good">1.21%</span></div>
+            <div class="metric-row"><span class="metric-label">Loss to Lease</span><span class="metric-val good">1.4%</span></div>
+            <div class="metric-row"><span class="metric-label">Avg Actual Rent</span><span class="metric-val">$934</span></div>
+            <div class="metric-row"><span class="metric-label">Avg Market Rent</span><span class="metric-val">$947</span></div>
+            <div class="metric-row" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);"><a href="demo_property_magnolia.html" style="color:var(--accent);text-decoration:none;font-size:12px;font-weight:600;">View Details →</a></div>
+          </div>
+        </div>
+        <div class="prop-card">
+          <div class="prop-header" style="border-left:4px solid #C8A84A">
+            <div class="prop-name">The Meridian</div>
+            <div class="prop-sub">134/144 units • 10 vacant • as of 2026-04-24</div>
+          </div>
+          <div class="prop-metrics">
+            <div class="metric-row"><span class="metric-label">Active Leads</span><span class="metric-val">5</span></div>
+            <div class="metric-row"><span class="metric-label">Phys. Occupancy</span><span class="metric-val good">93.3%</span></div>
+            <div class="metric-row"><span class="metric-label">Exposure</span><span class="metric-val good">7.6%</span></div>
+            <div class="metric-row"><span class="metric-label">Delinquency</span><span class="metric-val good">1.07%</span></div>
+            <div class="metric-row"><span class="metric-label">Loss to Lease</span><span class="metric-val good">2.6%</span></div>
+            <div class="metric-row"><span class="metric-label">Avg Actual Rent</span><span class="metric-val">$1,073</span></div>
+            <div class="metric-row"><span class="metric-label">Avg Market Rent</span><span class="metric-val">$1,101</span></div>
+            <div class="metric-row" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);"><a href="demo_property_meridian.html" style="color:var(--accent);text-decoration:none;font-size:12px;font-weight:600;">View Details →</a></div>
+          </div>
+        </div>
+        <div class="prop-card">
+          <div class="prop-header" style="border-left:4px solid #5A7A7C">
+            <div class="prop-name">Cypress Ridge</div>
+            <div class="prop-sub">45/48 units • 3 vacant • as of 2026-04-24</div>
+          </div>
+          <div class="prop-metrics">
+            <div class="metric-row"><span class="metric-label">Active Leads</span><span class="metric-val">9</span></div>
+            <div class="metric-row"><span class="metric-label">Phys. Occupancy</span><span class="metric-val good">94.6%</span></div>
+            <div class="metric-row"><span class="metric-label">Exposure</span><span class="metric-val good">8.3%</span></div>
+            <div class="metric-row"><span class="metric-label">Delinquency</span><span class="metric-val bad">2.17%</span></div>
+            <div class="metric-row"><span class="metric-label">Loss to Lease</span><span class="metric-val good">4.6%</span></div>
+            <div class="metric-row"><span class="metric-label">Avg Actual Rent</span><span class="metric-val">$1,100</span></div>
+            <div class="metric-row"><span class="metric-label">Avg Market Rent</span><span class="metric-val">$1,152</span></div>
+            <div class="metric-row" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);"><a href="demo_property_cypress.html" style="color:var(--accent);text-decoration:none;font-size:12px;font-weight:600;">View Details →</a></div>
+          </div>
+        </div>
+        <div class="prop-card">
+          <div class="prop-header" style="border-left:4px solid #E84060">
+            <div class="prop-name">The Brookfield</div>
+            <div class="prop-sub">102/112 units • 10 vacant • as of 2026-04-24</div>
+          </div>
+          <div class="prop-metrics">
+            <div class="metric-row"><span class="metric-label">Active Leads</span><span class="metric-val">3</span></div>
+            <div class="metric-row"><span class="metric-label">Phys. Occupancy</span><span class="metric-val good">91.7%</span></div>
+            <div class="metric-row"><span class="metric-label">Exposure</span><span class="metric-val good">8.9%</span></div>
+            <div class="metric-row"><span class="metric-label">Delinquency</span><span class="metric-val good">1.2%</span></div>
+            <div class="metric-row"><span class="metric-label">Loss to Lease</span><span class="metric-val good">3.3%</span></div>
+            <div class="metric-row"><span class="metric-label">Avg Actual Rent</span><span class="metric-val">$1,227</span></div>
+            <div class="metric-row"><span class="metric-label">Avg Market Rent</span><span class="metric-val">$1,269</span></div>
+            <div class="metric-row" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);"><a href="demo_property_brookfield.html" style="color:var(--accent);text-decoration:none;font-size:12px;font-weight:600;">View Details →</a></div>
+          </div>
+        </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">KPI vs Target Benchmarks</div>
+    <div class="bench-wrap">
+      <table class="bench-table">
+        <thead><tr><th>Metric</th><th>Target</th><th>Magnolia Gardens</th><th>The Meridian</th><th>Cypress Ridge</th><th>The Brookfield</th></tr></thead>
+        <tbody><tr><td>Physical Occupancy</td><td class='target'>>90%</td><td class="good">92.1%</td><td class="good">93.3%</td><td class="good">94.6%</td><td class="good">91.7%</td></tr><tr><td>Exposure</td><td class='target'><15%</td><td class="good">8.3%</td><td class="good">7.6%</td><td class="good">8.3%</td><td class="good">8.9%</td></tr><tr><td>Delinquency</td><td class='target'><2%</td><td class="good">1.21%</td><td class="good">1.07%</td><td class="bad">2.17%</td><td class="good">1.2%</td></tr><tr><td>Loss to Lease</td><td class='target'><5%</td><td class="good">1.4%</td><td class="good">2.6%</td><td class="good">4.6%</td><td class="good">3.3%</td></tr><tr><td>Avg Actual Rent</td><td class='target'>—</td><td class="">$934</td><td class="">$1,073</td><td class="">$1,100</td><td class="">$1,227</td></tr><tr><td>Avg Market Rent</td><td class='target'>—</td><td class="">$947</td><td class="">$1,101</td><td class="">$1,152</td><td class="">$1,269</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Leasing Traffic Overview</div>
+    <div class="traffic-stats">
+      <div class="traffic-stat"><div class="val">27</div><div class="lbl">Active Leads</div></div>
+      <div class="traffic-stat"><div class="val">84.4%</div><div class="lbl">Conversion Rate</div></div>
+      <div class="traffic-stat"><div class="val">32</div><div class="lbl">Total Prospects</div></div>
+      <div class="traffic-stat"><div class="val">0.87</div><div class="lbl">Leads / Vacant</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Trends</div>
+    <div class="charts-grid">
+      <div class="chart-card"><div class="chart-title">Portfolio Weighted Avg Occupancy</div><canvas id="waChart" height="220"></canvas></div>
+      <div class="chart-card"><div class="chart-title">Avg Actual Rent per Unit</div><canvas id="rentChart" height="220"></canvas></div>
+    </div>
+    <div class="chart-full"><div class="chart-title">Occupancy by Property</div><canvas id="occChart" height="130"></canvas></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Lease Expiration Schedule — Next 12 Months</div>
+    <div class="chart-full"><canvas id="leaseChart" height="130"></canvas></div>
+  </div>
+</div>
+
+<div class="footer">
+  Generated March 18, 2026 • Stoneflower Capital — Sample Portfolio Demo • Confidential — For Demo Purposes Only
+  <div class="copyright">© 2026 All Rights Reserved by Stoneflower Capital LLC</div>
+</div>
+
+<script>
+const OCC = [{"date": "2025-08-01", "magnolia": 88.6, "meridian": 91.0, "cypress": 91.9, "brookfield": 90.6, "wa": 90.4}, {"date": "2025-08-15", "magnolia": 90.0, "meridian": 91.1, "cypress": 91.7, "brookfield": 89.5, "wa": 90.5}, {"date": "2025-08-29", "magnolia": 91.0, "meridian": 89.4, "cypress": 91.1, "brookfield": 89.5, "wa": 90.0}, {"date": "2025-09-12", "magnolia": 89.4, "meridian": 88.6, "cypress": 92.5, "brookfield": 91.9, "wa": 90.2}, {"date": "2025-09-26", "magnolia": 90.3, "meridian": 91.5, "cypress": 88.9, "brookfield": 88.9, "wa": 90.2}, {"date": "2025-10-10", "magnolia": 89.4, "meridian": 90.1, "cypress": 89.7, "brookfield": 92.3, "wa": 90.5}, {"date": "2025-10-24", "magnolia": 89.8, "meridian": 91.5, "cypress": 90.3, "brookfield": 91.3, "wa": 90.9}, {"date": "2025-11-07", "magnolia": 90.0, "meridian": 90.6, "cypress": 91.4, "brookfield": 91.8, "wa": 90.9}, {"date": "2025-11-21", "magnolia": 88.8, "meridian": 88.9, "cypress": 91.5, "brookfield": 91.5, "wa": 89.9}, {"date": "2025-12-05", "magnolia": 90.8, "meridian": 88.9, "cypress": 92.2, "brookfield": 91.6, "wa": 90.5}, {"date": "2025-12-19", "magnolia": 91.3, "meridian": 90.5, "cypress": 90.0, "brookfield": 92.9, "wa": 91.3}, {"date": "2026-01-02", "magnolia": 92.6, "meridian": 91.3, "cypress": 91.7, "brookfield": 91.1, "wa": 91.6}, {"date": "2026-01-16", "magnolia": 90.3, "meridian": 90.4, "cypress": 91.6, "brookfield": 90.9, "wa": 90.7}, {"date": "2026-01-30", "magnolia": 89.9, "meridian": 92.6, "cypress": 92.0, "brookfield": 91.3, "wa": 91.5}, {"date": "2026-02-13", "magnolia": 92.1, "meridian": 90.6, "cypress": 92.6, "brookfield": 90.7, "wa": 91.2}, {"date": "2026-02-27", "magnolia": 91.8, "meridian": 92.2, "cypress": 92.3, "brookfield": 91.3, "wa": 91.9}, {"date": "2026-03-13", "magnolia": 90.8, "meridian": 92.0, "cypress": 90.9, "brookfield": 93.9, "wa": 92.1}, {"date": "2026-03-27", "magnolia": 93.1, "meridian": 91.4, "cypress": 91.3, "brookfield": 94.2, "wa": 92.6}, {"date": "2026-04-10", "magnolia": 92.3, "meridian": 93.7, "cypress": 94.5, "brookfield": 94.3, "wa": 93.6}, {"date": "2026-04-24", "magnolia": 92.1, "meridian": 93.3, "cypress": 94.6, "brookfield": 91.7, "wa": 92.7}];
+const RENT = [{"date": "2025-08-01", "magnolia": 931.07, "meridian": 1066.09, "cypress": 1096.49, "brookfield": 1263.4}, {"date": "2025-08-15", "magnolia": 964.88, "meridian": 1037.75, "cypress": 1038.51, "brookfield": 1266.03}, {"date": "2025-08-29", "magnolia": 978.57, "meridian": 1026.83, "cypress": 1056.11, "brookfield": 1254.55}, {"date": "2025-09-12", "magnolia": 943.15, "meridian": 1033.76, "cypress": 1069.89, "brookfield": 1201.77}, {"date": "2025-09-26", "magnolia": 991.69, "meridian": 1035.16, "cypress": 1075.92, "brookfield": 1191.97}, {"date": "2025-10-10", "magnolia": 916.73, "meridian": 1001.5, "cypress": 1020.7, "brookfield": 1251.19}, {"date": "2025-10-24", "magnolia": 975.77, "meridian": 1008.65, "cypress": 1101.07, "brookfield": 1275.17}, {"date": "2025-11-07", "magnolia": 1007.71, "meridian": 1054.93, "cypress": 1035.45, "brookfield": 1264.38}, {"date": "2025-11-21", "magnolia": 940.3, "meridian": 998.71, "cypress": 1016.31, "brookfield": 1186.25}, {"date": "2025-12-05", "magnolia": 997.22, "meridian": 988.33, "cypress": 1067.38, "brookfield": 1262.22}, {"date": "2025-12-19", "magnolia": 998.54, "meridian": 1047.3, "cypress": 1111.46, "brookfield": 1256.81}, {"date": "2026-01-02", "magnolia": 924.04, "meridian": 990.13, "cypress": 1101.24, "brookfield": 1254.4}, {"date": "2026-01-16", "magnolia": 964.08, "meridian": 1023.95, "cypress": 1031.02, "brookfield": 1205.19}, {"date": "2026-01-30", "magnolia": 952.23, "meridian": 1010.07, "cypress": 1072.01, "brookfield": 1234.87}, {"date": "2026-02-13", "magnolia": 992.92, "meridian": 1001.19, "cypress": 1111.27, "brookfield": 1248.53}, {"date": "2026-02-27", "magnolia": 908.81, "meridian": 1063.06, "cypress": 1042.18, "brookfield": 1249.64}, {"date": "2026-03-13", "magnolia": 932.84, "meridian": 1022.9, "cypress": 1044.84, "brookfield": 1248.37}, {"date": "2026-03-27", "magnolia": 921.59, "meridian": 1035.38, "cypress": 1037.66, "brookfield": 1262.61}, {"date": "2026-04-10", "magnolia": 981.75, "meridian": 1001.14, "cypress": 1074.67, "brookfield": 1234.69}, {"date": "2026-04-24", "magnolia": 933.54, "meridian": 1072.71, "cypress": 1099.84, "brookfield": 1227.22}];
+const LEASE = [{"month": "Mar-26", "magnolia": 2, "meridian": 5, "cypress": 4, "brookfield": 3}, {"month": "Apr-26", "magnolia": 2, "meridian": 8, "cypress": 8, "brookfield": 5}, {"month": "May-26", "magnolia": 2, "meridian": 7, "cypress": 3, "brookfield": 7}, {"month": "Jun-26", "magnolia": 7, "meridian": 6, "cypress": 2, "brookfield": 2}, {"month": "Jul-26", "magnolia": 8, "meridian": 4, "cypress": 3, "brookfield": 3}, {"month": "Aug-26", "magnolia": 8, "meridian": 6, "cypress": 3, "brookfield": 2}, {"month": "Sep-26", "magnolia": 8, "meridian": 8, "cypress": 6, "brookfield": 3}, {"month": "Oct-26", "magnolia": 6, "meridian": 3, "cypress": 8, "brookfield": 8}, {"month": "Nov-26", "magnolia": 3, "meridian": 4, "cypress": 8, "brookfield": 3}, {"month": "Dec-26", "magnolia": 8, "meridian": 6, "cypress": 2, "brookfield": 4}, {"month": "Jan-27", "magnolia": 8, "meridian": 3, "cypress": 3, "brookfield": 6}, {"month": "Feb-27", "magnolia": 4, "meridian": 8, "cypress": 3, "brookfield": 2}];
+const PROP_ORDER = ["magnolia", "meridian", "cypress", "brookfield"];
+const PROP_COLORS = {"magnolia": "#1E3B3D", "meridian": "#C8A84A", "cypress": "#5A7A7C", "brookfield": "#E84060"};
+
+Chart.defaults.color = '#6B7280';
+Chart.defaults.borderColor = '#E0E0E0';
+Chart.defaults.font.family = "'Lato', sans-serif";
+Chart.defaults.font.size = 11;
+
+new Chart(document.getElementById('waChart'), {
+  type: 'line',
+  data: {
+    labels: OCC.map(d => d.date),
+    datasets: [{
+      label: 'Weighted Avg Occupancy',
+      data: OCC.map(d => d.wa),
+      borderColor: '#1E3B3D',
+      backgroundColor: 'rgba(30,59,61,0.06)',
+      fill: true, tension: 0.4, pointRadius: 0,
+      pointHoverRadius: 4, pointBackgroundColor: '#1E3B3D',
+      borderWidth: 2.5, spanGaps: true
+    }]
+  },
+  options: {
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { min: 80, max: 100, ticks: { callback: v => v + '%' },
+           grid: { color: '#EDF2F0' } },
+      x: { ticks: { maxTicksLimit: 8 },
+           grid: { color: '#EDF2F0' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('rentChart'), {
+  type: 'line',
+  data: {
+    labels: RENT.map(d => d.date),
+    datasets: [
+      {
+        label: 'Magnolia Gardens',
+        data: RENT.map(d => d.magnolia),
+        borderColor: PROP_COLORS.magnolia,
+        backgroundColor: PROP_COLORS.magnolia + '15',
+        tension: 0.4, pointRadius: 0, pointHoverRadius: 4,
+        borderWidth: 2, spanGaps: true
+      },
+      {
+        label: 'The Meridian',
+        data: RENT.map(d => d.meridian),
+        borderColor: PROP_COLORS.meridian,
+        backgroundColor: PROP_COLORS.meridian + '15',
+        tension: 0.4, pointRadius: 0, pointHoverRadius: 4,
+        borderWidth: 2, spanGaps: true
+      },
+      {
+        label: 'Cypress Ridge',
+        data: RENT.map(d => d.cypress),
+        borderColor: PROP_COLORS.cypress,
+        backgroundColor: PROP_COLORS.cypress + '15',
+        tension: 0.4, pointRadius: 0, pointHoverRadius: 4,
+        borderWidth: 2, spanGaps: true
+      },
+      {
+        label: 'The Brookfield',
+        data: RENT.map(d => d.brookfield),
+        borderColor: PROP_COLORS.brookfield,
+        backgroundColor: PROP_COLORS.brookfield + '15',
+        tension: 0.4, pointRadius: 0, pointHoverRadius: 4,
+        borderWidth: 2, spanGaps: true
+      }
+    ]
+  },
+  options: {
+    plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 14, font: { size: 11 } } } },
+    scales: {
+      y: { ticks: { callback: v => '$' + v },
+           grid: { color: '#EDF2F0' } },
+      x: { ticks: { maxTicksLimit: 8 },
+           grid: { color: '#EDF2F0' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('occChart'), {
+  type: 'line',
+  data: {
+    labels: OCC.map(d => d.date),
+    datasets: [
+      {
+        label: 'Magnolia Gardens',
+        data: OCC.map(d => d.magnolia),
+        borderColor: PROP_COLORS.magnolia,
+        backgroundColor: PROP_COLORS.magnolia + '15',
+        tension: 0.4, pointRadius: 0, pointHoverRadius: 4,
+        borderWidth: 2, spanGaps: true
+      },
+      {
+        label: 'The Meridian',
+        data: OCC.map(d => d.meridian),
+        borderColor: PROP_COLORS.meridian,
+        backgroundColor: PROP_COLORS.meridian + '15',
+        tension: 0.4, pointRadius: 0, pointHoverRadius: 4,
+        borderWidth: 2, spanGaps: true
+      },
+      {
+        label: 'Cypress Ridge',
+        data: OCC.map(d => d.cypress),
+        borderColor: PROP_COLORS.cypress,
+        backgroundColor: PROP_COLORS.cypress + '15',
+        tension: 0.4, pointRadius: 0, pointHoverRadius: 4,
+        borderWidth: 2, spanGaps: true
+      },
+      {
+        label: 'The Brookfield',
+        data: OCC.map(d => d.brookfield),
+        borderColor: PROP_COLORS.brookfield,
+        backgroundColor: PROP_COLORS.brookfield + '15',
+        tension: 0.4, pointRadius: 0, pointHoverRadius: 4,
+        borderWidth: 2, spanGaps: true
+      }
+    ]
+  },
+  options: {
+    plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 14, font: { size: 11 } } } },
+    scales: {
+      y: { min: 70, max: 100, ticks: { callback: v => v + '%' },
+           grid: { color: '#EDF2F0' } },
+      x: { ticks: { maxTicksLimit: 8 },
+           grid: { color: '#EDF2F0' } }
+    }
+  }
+});
+
+new Chart(document.getElementById('leaseChart'), {
+  type: 'bar',
+  data: {
+    labels: LEASE.map(d => d.month),
+    datasets: [
+      {
+        label: 'Magnolia Gardens',
+        data: LEASE.map(d => d.magnolia),
+        backgroundColor: PROP_COLORS.magnolia + 'DD',
+        borderColor: PROP_COLORS.magnolia,
+        borderWidth: 1, borderRadius: 3
+      },
+      {
+        label: 'The Meridian',
+        data: LEASE.map(d => d.meridian),
+        backgroundColor: PROP_COLORS.meridian + 'DD',
+        borderColor: PROP_COLORS.meridian,
+        borderWidth: 1, borderRadius: 3
+      },
+      {
+        label: 'Cypress Ridge',
+        data: LEASE.map(d => d.cypress),
+        backgroundColor: PROP_COLORS.cypress + 'DD',
+        borderColor: PROP_COLORS.cypress,
+        borderWidth: 1, borderRadius: 3
+      },
+      {
+        label: 'The Brookfield',
+        data: LEASE.map(d => d.brookfield),
+        backgroundColor: PROP_COLORS.brookfield + 'DD',
+        borderColor: PROP_COLORS.brookfield,
+        borderWidth: 1, borderRadius: 3
+      }
+    ]
+  },
+  options: {
+    plugins: { legend: { position: 'top', labels: { boxWidth: 12, padding: 14, font: { size: 11 } } } },
+    scales: {
+      x: { grid: { display: false } },
+      y: { ticks: { stepSize: 1 }, grid: { color: '#EDF2F0' } }
+    }
+  }
+});
+</script>
+</body>
+</html>
